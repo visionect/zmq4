@@ -116,6 +116,14 @@ var (
 	}
 )
 
+type DeviceType int
+
+const (
+	STREAMER  = DeviceType(C.ZMQ_STREAMER)
+	FORWARDER = DeviceType(C.ZMQ_FORWARDER)
+	QUEUE     = DeviceType(C.ZMQ_QUEUE)
+)
+
 func init() {
 	major, minor, patch = Version()
 	if major != 4 {
@@ -1306,6 +1314,13 @@ func (soc *Socket) RecvBytesWithMetadata(flags Flag, properties ...string) (msg 
 		}
 	}
 	return data, metadata, nil
+}
+
+func Device(t DeviceType, in, out *Socket) error {
+	if rc, err := C.zmq_device(C.int(t), in.soc, out.soc); rc != 0 {
+		return errget(err)
+	}
+	return errors.New("zmq_device() returned unexpectedly.")
 }
 
 func hasCap(s string) (value bool) {
